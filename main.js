@@ -21,7 +21,7 @@ define(function(require, exports, module){
     var BAR_EL = "input#productivity-project-files-search-bar";
     var BAR_TXT = "Alt + S to start searching";
     var BAR_FOCUSED_TXT = " type or Esc to clean";
-    var BAR_TIMEOUT = 300;
+    var BAR_TIMEOUT = 250;
     
     var JSTREE_ROOT_EL = "ul.jstree-brackets";
     var JSTREE_DIR_OPENED_CLASS = "jstree-open";
