@@ -3,8 +3,8 @@
 }
 #productivity-project-files-search-bar{
     background: 0.5rem/0.75rem no-repeat url('search.svg') rgba(0, 0, 0, 0.33);
-    padding-left: 1.5rem;
-    width: calc(100% - 2.75rem);
+    padding-left: 1.75rem;
+    width: calc(100% - 3rem);
     display: block;
     color: white;
 }
