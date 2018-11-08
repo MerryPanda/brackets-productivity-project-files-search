@@ -12,14 +12,14 @@ define(function(require, exports, module){
     var Menus = brackets.getModule("command/Menus");
 
     var CMD_ID = "Productivity.ProjectFiles.Search";
-    var CMD_NAME = "Search in Project Files";
+    var CMD_NAME = "Find in Project Files";
     var CMD_KEY = "Alt-f";
     
     var PROJECT_FILES_HEADER_ID = "project-files-header";
 
     var BAR_ID = "productivity-project-files-search-bar";
     var BAR_EL = "input#productivity-project-files-search-bar";
-    var BAR_TXT = "Alt + F to start searching";
+    var BAR_TXT = "Alt + F to start finding";
     var BAR_FOCUSED_TXT = " type or Esc to clean, separate by space";
     var BAR_TIMEOUT = 250;
     
