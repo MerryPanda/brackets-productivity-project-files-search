@@ -1,0 +1,25 @@
+{
+	"title": "Productivity / Project Files Search",
+	"name": "productivity-project-files-search",
+	"description": "Search within your project files. Folder and file names are considered. Separate search chunks by space.",
+	"homepage": "https://github.com/MerryPanda/brackets-productivity-project-files-search",
+	"author": {
+		"name": "MerryPanda",
+		"url": "https://github.com/MerryPanda"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/MerryPanda/brackets-productivity-project-files-search.git"
+	},
+	"bugs": {
+		"url": "https://github.com/MerryPanda/brackets-productivity-project-files-search/issues"
+	},
+	"license": "MIT",
+	"categories": "editing",
+	"keywords": ["search", "directory", "file", "find", "filter", "project"],
+	"main": ["main.js"],
+	"engines": {
+		"brackets": ">=1.0.0"
+	},
+	"version": "1.0.0"
+}
