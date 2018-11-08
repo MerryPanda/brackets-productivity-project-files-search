@@ -20,7 +20,7 @@ define(function(require, exports, module){
     var BAR_ID = "productivity-project-files-search-bar";
     var BAR_EL = "input#productivity-project-files-search-bar";
     var BAR_TXT = "Alt + S to start searching";
-    var BAR_FOCUSED_TXT = " search or Esc to clean";
+    var BAR_FOCUSED_TXT = " type or Esc to clean";
     var BAR_TIMEOUT = 300;
     
     var JSTREE_ROOT_EL = "ul.jstree-brackets";
