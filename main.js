@@ -28,30 +28,62 @@ define(function (require, exports, module) {
 	var BAR_ID = "productivity-project-files-search-bar";
 	var BAR_EL = "input#productivity-project-files-search-bar";
 	var BAR_TXT = "Alt + S/C/X to start/continue/clean";
-	var BAR_FOCUSED_TXT = "separate by space, Esc to clean";
+	var BAR_FOCUSED_TXT = "separate by space, ESC to clean, ! - exclude";
 	
 	var SEARCH_TIMEOUT = 250;
 
-	var JSTREE_ROOT_EL = "ul.jstree-brackets";
-	var JSTREE_DIR_OPENED_CLASS = "jstree-open";
-	var JSTREE_DIR_OPENED_EL= "ul.jstree-brackets li.jstree-open";
-	var JSTREE_DIR_CLOSED_CLASS = "jstree-closed";
-	var JSTREE_DIR_CLOSED_EL = "ul.jstree-brackets li.jstree-closed";
-	var JSTREE_FILE_CLASS = "jstree-leaf";
-	var JSTREE_FILE_EL = "ul.jstree-brackets li.jstree-leaf";
-	var JSTREE_FILE_LOCAL_EL = "li.jstree-leaf";
-	var JSTREE_FILE_LOCAL_EXCLUDED_EL = "li.jstree-leaf.search-exclude";
-	var JSTREE_EXCLUDED_El = "ul.jstree-brackets li.search-exclude";
-	var JSTREE_ANY_El = "ul.jstree-brackets li";
-
+	var FILETREE_ROOT_EL = "ul.jstree-brackets";
+	var FILETREE_DIR_OPENED_CLASS = "jstree-open";
+	var FILETREE_DIR_OPENED_EL = "ul.jstree-brackets li.jstree-open";
+	var FILETREE_DIR_CLOSED_CLASS = "jstree-closed";
+	var FILETREE_DIR_CLOSED_EL = "ul.jstree-brackets li.jstree-closed";
+	var FILETREE_FILE_CLASS = "jstree-leaf";
+	var FILETREE_FILE_EL = "ul.jstree-brackets li.jstree-leaf";
+	var FILETREE_FILE_LOCAL_EL = "li.jstree-leaf";
+	var FILETREE_FILE_LOCAL_EXCLUDED_EL = "li.jstree-leaf.search-exclude";
+	var FILETREE_EXCLUDED_El = "ul.jstree-brackets li.search-exclude";
+	var FILETREE_ANY_El = "ul.jstree-brackets li";
 	var FILETREE_SELECTION_EL = "div.filetree-selection";
 	var FILETREE_SELECTION_EXTENSION_EL = "div.filetree-selection-extension";
+	var FILETREE_DATA_SEARCH_ATTR = "data-search";
 
 	var KEY_ESC = 27;
+	
+	var SYMB_EXCLAMATION = "!";
 	
 	var EL_EXCLUDE = "search-exclude";
 
 	var searchTimeout = null;
+	
+	var util = {};
+	
+	util.str = new function () {
+		this.toArrSplitBySpaceLc = function (str) {
+			return str.toLowerCase().split(" ").filter(Boolean);
+		}
+		this.isContaining = function (str, what) {
+			return str.indexOf(what) < 0 ?  false : true;
+		}
+		this.hasFirstChar = function (str, char) {
+			return str.charAt(0) === char ? true : false;
+		}
+		this.delFirstChar = function (str) {
+			return str.substring(1);
+		}
+	}
+	
+	util.searcher = new function () {
+		function hasStrValidNode (str, node) {
+			if (util.str.hasFirstChar(node, SYMB_EXCLAMATION)) return !util.str.isContaining(str, util.str.delFirstChar(node));
+			else return util.str.isContaining(str, node);
+		}
+		////////
+		this.hasStrManyNodes = function (str, nodes) {
+			for (let node of nodes) if (!hasStrValidNode(str, node)) return false;
+
+			return true;
+		}
+	};
 
 	start();
 
@@ -76,7 +108,7 @@ define(function (require, exports, module) {
 
 		startSearchTimeout();
 	}
-	function filetreeSelectionHide () {
+	function fileTreeSelectionHide () {
 		$(FILETREE_SELECTION_EL).css("display", "none");
 		$(FILETREE_SELECTION_EXTENSION_EL).css("display", "none");
 	}
@@ -102,67 +134,61 @@ define(function (require, exports, module) {
 	function searchProjectFiles () {
 		var search = $(BAR_EL).val();
 		//alert('search: "'+search+'"');
-		filetreeSelectionHide();
+		fileTreeSelectionHide();
 
 		if (search.length > 0) {
-			jstreeConfigure(JSTREE_ROOT_EL);
-			jstreeSearch(jstreeSearchPrepare(search));
-			jstreeDirs();
+			fileTreeConfigure(FILETREE_ROOT_EL);
+			fileTreeSearch(search);
+			fileTreeDirs();
 		} else {
-			jstreeConfigure(JSTREE_ROOT_EL);
-			jstreeOpenAll();
+			fileTreeConfigure(FILETREE_ROOT_EL);
+			fileTreeOpenAll();
 		}
 	}
-	function jstreeOpenAll () {
-		$(JSTREE_EXCLUDED_El).each((i, e) => $(e).removeClass(EL_EXCLUDE));
+	function fileTreeOpenAll () {
+		$(FILETREE_EXCLUDED_El).each((i, e) => $(e).removeClass(EL_EXCLUDE));
 	}
-	function jstreeDirs () {
-		$(JSTREE_DIR_OPENED_EL).each(function(i, e){
+	function fileTreeDirs () {
+		$(FILETREE_DIR_OPENED_EL).each(function(i, e){
 			var dir = $(e);
 
-			if(dir.find(JSTREE_FILE_LOCAL_EL).length === dir.find(JSTREE_FILE_LOCAL_EXCLUDED_EL).length) dir.addClass(EL_EXCLUDE);
+			if(dir.find(FILETREE_FILE_LOCAL_EL).length === dir.find(FILETREE_FILE_LOCAL_EXCLUDED_EL).length) dir.addClass(EL_EXCLUDE);
 			else dir.removeClass(EL_EXCLUDE);
 		})
 	}
-	function jstreeSearchPrepare(i){
-		return i.toLowerCase().split(" ").filter(Boolean);
-	}
-	function jstreeSearchContain(str, search){
-		for(let e of search) if(str.indexOf(e) < 0) return false;
+	function fileTreeSearch(search){
+		var nodes = util.str.toArrSplitBySpaceLc(search);
 
-		return true;
-	}
-	function jstreeSearch(search){
-		$(JSTREE_FILE_EL).each(function (i, e) {
-			if(jstreeSearchContain($(e).attr("data-search"), search)) $(e).removeClass(EL_EXCLUDE);
+		$(FILETREE_FILE_EL).each(function (i, e) {
+			if(util.searcher.hasStrManyNodes($(e).attr(FILETREE_DATA_SEARCH_ATTR), nodes)) $(e).removeClass(EL_EXCLUDE);
 			else $(e).addClass(EL_EXCLUDE);
 		});
 	}
-	function jstreeTagGet (e) {
+	function fileTreeTagGet (e) {
 		var o='';
 
 		$(e).children("a").first().children("span").each((i, e)=>{ o+=$(e).text() })
 
 		return o;
 	}
-	function jstreeTagClean (...i) {
+	function fileTreeTagClean (...i) {
 		var o = [];
 
 		for( let e of i) if(e) o.push(e.toLowerCase());
 
 		return o.join('/');
 	}
-	function jstreeConfigure (i, tags) {
+	function fileTreeConfigure (i, tags) {
 		$(i).children("li").each(function (i,e) {
-			if ($(e).hasClass(JSTREE_DIR_CLOSED_CLASS)) {
+			if ($(e).hasClass(FILETREE_DIR_CLOSED_CLASS)) {
 				$(e).click();//.attr("data-closed",true);
 
-				jstreeConfigure($(e).children("ul").first(), jstreeTagClean(tags, jstreeTagGet(e)));
-			} else if ($(e).hasClass(JSTREE_DIR_OPENED_CLASS)) {
-				jstreeConfigure($(e).children("ul").first(), jstreeTagClean(tags, jstreeTagGet(e)));
-			} else if ($(e).hasClass(JSTREE_FILE_CLASS)) {
-				$(e).attr("data-search", jstreeTagClean(tags, jstreeTagGet(e)));
-			} else $(e).removeAttr("data-search");
+				fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
+			} else if ($(e).hasClass(FILETREE_DIR_OPENED_CLASS)) {
+				fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
+			} else if ($(e).hasClass(FILETREE_FILE_CLASS)) {
+				$(e).attr(FILETREE_DATA_SEARCH_ATTR, fileTreeTagClean(tags, fileTreeTagGet(e)));
+			} else $(e).removeAttr(FILETREE_DATA_SEARCH_ATTR);
 		});
 	}
 	function onSearchBarKeyUp (e) {

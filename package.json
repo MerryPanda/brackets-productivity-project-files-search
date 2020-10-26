@@ -1,7 +1,7 @@
 {
 	"title": "Productivity / Project Files Search",
 	"name": "brackets-productivity-project-files-search",
-	"description": "Search within your project files. Folder and file names are considered. Separate search chunks by space.",
+	"description": "Search within your project files. Folder and file names are considered. Separate search chunks by space. Visit homepage for full info.",
 	"homepage": "https://github.com/MerryPanda/brackets-productivity-project-files-search",
 	"author": {
 		"name": "MerryPanda",
@@ -21,5 +21,5 @@
 	"engines": {
 		"brackets": ">=1.0.0"
 	},
-	"version": "1.1.0"
+	"version": "1.2.0"
 }
