@@ -10,6 +10,11 @@ define(function (require, exports, module)
 	var ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
 	//var EditorManager = brackets.getModule("editor/EditorManager");
 	var Menus = brackets.getModule("command/Menus");
+	
+	var SYMB_NL = "\n";
+	
+	var KS_EXCLUDE = "!";
+	var KS_ESCAPE = "\\";
 
 	var CMD_NEW_ID = "Productivity.ProjectFiles.StartSearching";
 	var CMD_NEW_NAME = "Start Searching in Project Files";
@@ -28,7 +33,8 @@ define(function (require, exports, module)
 	var BAR_ID = "productivity-project-files-search-bar";
 	var BAR_EL = "input#productivity-project-files-search-bar";
 	var BAR_TXT = "Alt + S/C/X to start/continue/clean";
-	var BAR_FOCUSED_TXT = "Separate by space, ESC to clean, ! - exclude, \\ - esc";
+	var BAR_FOCUSED_TXT = "Separate by space, ESC to clean, ! - exclude, / - dir sep, \\ - esc";
+	var BAR_TITLE = BAR_TXT + SYMB_NL + BAR_FOCUSED_TXT
 	
 	var SEARCH_TIMEOUT = 250;
 
@@ -48,11 +54,6 @@ define(function (require, exports, module)
 	var FILETREE_DATA_SEARCH_ATTR = "data-search";
 
 	var KEY_ESC = 27;
-	
-	var KS_EXCLUDE = "!";
-	var KS_ESCAPE = "\\";
-	
-	var SYMB_NL = "\n";
 	
 	var EL_EXCLUDE = "search-exclude";
 
@@ -171,7 +172,7 @@ define(function (require, exports, module)
 
 		var searchBar = document.createElement("input");
 		searchBar.type = "text";
-		searchBar.title = BAR_TXT + SYMB_NL + BAR_FOCUSED_TXT;
+		searchBar.title = BAR_TITLE;
 		searchBar.setAttribute("placeholder", BAR_TXT);
 		searchBar.id = BAR_ID;
 		searchBar.addEventListener("keyup", onSearchBarKeyUp);
