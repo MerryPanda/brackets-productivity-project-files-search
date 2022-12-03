@@ -1,8 +1,8 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets */
 
-// Re-indent the open document according to your current indentation settings.
-define(function (require, exports, module) {
+define(function (require, exports, module)
+{
 	"use strict";
 
 	var ProjectManager = brackets.getModule("project/ProjectManager");
@@ -19,7 +19,7 @@ define(function (require, exports, module) {
 	var CMD_CONTINUE_NAME = "Continue Searching in Project Files";
 	var CMD_CONTINUE_KEY = "Alt-c";
 	
-	var CMD_CLEAN_ID = "Productivity.ProjectFiles.CleanSearch Query";
+	var CMD_CLEAN_ID = "Productivity.ProjectFiles.CleanSearchQuery";
 	var CMD_CLEAN_NAME = "Clean Project Files Search Query";
 	var CMD_CLEAN_KEY = "Alt-x";
 
@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 	var BAR_ID = "productivity-project-files-search-bar";
 	var BAR_EL = "input#productivity-project-files-search-bar";
 	var BAR_TXT = "Alt + S/C/X to start/continue/clean";
-	var BAR_FOCUSED_TXT = "separate by space, ESC to clean, ! - exclude";
+	var BAR_FOCUSED_TXT = "Separate by space, ESC to clean, ! - exclude, \\ - esc";
 	
 	var SEARCH_TIMEOUT = 250;
 
@@ -49,7 +49,10 @@ define(function (require, exports, module) {
 
 	var KEY_ESC = 27;
 	
-	var SYMB_EXCLAMATION = "!";
+	var KS_EXCLUDE = "!";
+	var KS_ESCAPE = "\\";
+	
+	var SYMB_NL = "\n";
 	
 	var EL_EXCLUDE = "search-exclude";
 
@@ -57,37 +60,78 @@ define(function (require, exports, module) {
 	
 	var util = {};
 	
-	util.str = new function () {
-		this.toArrSplitBySpaceLc = function (str) {
+	util.str = new function ()
+	{
+		this.toArrSplitBySpaceLc = function (str)
+		{
 			return str.toLowerCase().split(" ").filter(Boolean);
 		}
-		this.isContaining = function (str, what) {
+		
+		this.contains = function (str, what)
+		{
 			return str.indexOf(what) < 0 ?  false : true;
 		}
-		this.hasFirstChar = function (str, char) {
+		
+		this.hasFirstChar = function (str, char)
+		{
 			return str.charAt(0) === char ? true : false;
 		}
-		this.delFirstChar = function (str) {
+		
+		this.replace = function (str, ch1, ch2)
+		{
+			return str.replace(ch1, ch2);
+		}
+		
+		this.escape = function (str)
+		{
+			return str.replace(KS_ESCAPE, '');
+		}
+		
+		this.delFirstChar = function (str)
+		{
 			return str.substring(1);
 		}
 	}
 	
-	util.searcher = new function () {
-		function hasStrValidNode (str, node) {
-			if (util.str.hasFirstChar(node, SYMB_EXCLAMATION)) return !util.str.isContaining(str, util.str.delFirstChar(node));
-			else return util.str.isContaining(str, node);
+	util.searcher = new function ()
+	{
+		function isValidStrWithNode (str, node)
+		{
+			if (util.str.contains(str, node.str)) return node.exclude ? false : true;
 		}
-		////////
-		this.hasStrManyNodes = function (str, nodes) {
-			for (let node of nodes) if (!hasStrValidNode(str, node)) return false;
+		
+		function formatNode (node)
+		{
+			if (util.str.hasFirstChar(node, KS_EXCLUDE)) {
+				return {
+					str : util.str.escape(util.str.delFirstChar(node)),
+					exclude : true
+				}
+			} else {
+				return {
+					str : util.str.escape(node),
+					exclude : false
+				}
+			}
+		}
+		
+		this.isValidStrWithNodes = function (str, nodes)
+		{
+			for (let node of nodes) if (!isValidStrWithNode(str, node)) return false;
 
 			return true;
+		}
+		
+		this.buildNodes = function (str)
+		{
+			return util.str.toArrSplitBySpaceLc(str).map((v) => formatNode(v));
 		}
 	};
 
 	start();
 
-	function start(){
+	function start()
+	{
 		loadStyles()
 
 		registerMenuCommands();
@@ -97,26 +141,37 @@ define(function (require, exports, module) {
 		
 		listenProjectManager();
 	}
-	function loadStyles () {
+	
+	function loadStyles ()
+	{
 		ExtensionUtils.loadStyleSheet(module, "style.css");
 	}
-	function listenProjectManager () {
+	
+	function listenProjectManager ()
+	{
 		ProjectManager.on("projectOpen", cleanSearchInput);
 	}
-	function cleanSearchInput () {
+	
+	function cleanSearchInput ()
+	{
 		$(BAR_EL).val("");
 
 		startSearchTimeout();
 	}
-	function fileTreeSelectionHide () {
+	
+	function fileTreeSelectionHide ()
+	{
 		$(FILETREE_SELECTION_EL).css("display", "none");
 		$(FILETREE_SELECTION_EXTENSION_EL).css("display", "none");
 	}
-	function createSearchBar () {
+	
+	function createSearchBar ()
+	{
 		var projectFilesHeader = document.getElementById(PROJECT_FILES_HEADER_ID);
 
 		var searchBar = document.createElement("input");
 		searchBar.type = "text";
+		searchBar.title = BAR_TXT + SYMB_NL + BAR_FOCUSED_TXT;
 		searchBar.setAttribute("placeholder", BAR_TXT);
 		searchBar.id = BAR_ID;
 		searchBar.addEventListener("keyup", onSearchBarKeyUp);
@@ -130,8 +185,10 @@ define(function (require, exports, module) {
 			.on("focus", function () {
 				$(this).attr("placeholder", BAR_FOCUSED_TXT);
 			});
-	};
-	function searchProjectFiles () {
+	}
+	
+	function searchProjectFiles ()
+	{
 		var search = $(BAR_EL).val();
 		//alert('search: "'+search+'"');
 		fileTreeSelectionHide();
@@ -145,10 +202,14 @@ define(function (require, exports, module) {
 			fileTreeOpenAll();
 		}
 	}
-	function fileTreeOpenAll () {
+	
+	function fileTreeOpenAll ()
+	{
 		$(FILETREE_EXCLUDED_El).each((i, e) => $(e).removeClass(EL_EXCLUDE));
 	}
-	function fileTreeDirs () {
+	
+	function fileTreeDirs ()
+	{
 		$(FILETREE_DIR_OPENED_EL).each(function(i, e){
 			var dir = $(e);
 
@@ -156,51 +217,73 @@ define(function (require, exports, module) {
 			else dir.removeClass(EL_EXCLUDE);
 		})
 	}
-	function fileTreeSearch(search){
-		var nodes = util.str.toArrSplitBySpaceLc(search);
+	
+	function fileTreeSearch(search)
+	{
+		var nodes = util.searcher.buildNodes(search);
 
-		$(FILETREE_FILE_EL).each(function (i, e) {
-			if(util.searcher.hasStrManyNodes($(e).attr(FILETREE_DATA_SEARCH_ATTR), nodes)) $(e).removeClass(EL_EXCLUDE);
-			else $(e).addClass(EL_EXCLUDE);
-		});
+		$(FILETREE_FILE_EL).each(
+			function (i, e)
+			{
+				if (util.searcher.isValidStrWithNodes($(e).attr(FILETREE_DATA_SEARCH_ATTR), nodes)) $(e).removeClass(EL_EXCLUDE);
+				else $(e).addClass(EL_EXCLUDE);
+			}
+		);
 	}
-	function fileTreeTagGet (e) {
+	
+	function fileTreeTagGet (e)
+	{
 		var o='';
 
-		$(e).children("a").first().children("span").each((i, e)=>{ o+=$(e).text() })
+		$(e).children("a").first().children("span").each((i, e)=>{ o+=$(e).text() });
 
 		return o;
 	}
-	function fileTreeTagClean (...i) {
+	
+	function fileTreeTagClean (...i)
+	{
 		var o = [];
 
 		for( let e of i) if(e) o.push(e.toLowerCase());
 
 		return o.join('/');
 	}
-	function fileTreeConfigure (i, tags) {
-		$(i).children("li").each(function (i,e) {
-			if ($(e).hasClass(FILETREE_DIR_CLOSED_CLASS)) {
-				$(e).click();//.attr("data-closed",true);
+	
+	function fileTreeConfigure (i, tags)
+	{
+		$(i).children("li").each(
+			function (i,e)
+			{
+				if ($(e).hasClass(FILETREE_DIR_CLOSED_CLASS)) {
+					$(e).click();//.attr("data-closed",true);
 
-				fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
-			} else if ($(e).hasClass(FILETREE_DIR_OPENED_CLASS)) {
-				fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
-			} else if ($(e).hasClass(FILETREE_FILE_CLASS)) {
-				$(e).attr(FILETREE_DATA_SEARCH_ATTR, fileTreeTagClean(tags, fileTreeTagGet(e)));
-			} else $(e).removeAttr(FILETREE_DATA_SEARCH_ATTR);
-		});
+					fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
+				} else if ($(e).hasClass(FILETREE_DIR_OPENED_CLASS)) {
+					fileTreeConfigure($(e).children("ul").first(), fileTreeTagClean(tags, fileTreeTagGet(e)));
+				} else if ($(e).hasClass(FILETREE_FILE_CLASS)) {
+					$(e).attr(FILETREE_DATA_SEARCH_ATTR, fileTreeTagClean(tags, fileTreeTagGet(e)));
+				} else $(e).removeAttr(FILETREE_DATA_SEARCH_ATTR);
+			}
+		);
 	}
-	function onSearchBarKeyUp (e) {
+	
+	function onSearchBarKeyUp (e)
+	{
 		if(e.keyCode === KEY_ESC) cleanSearchInput();
 		else startSearchTimeout();
 	}
-	function startSearchTimeout () {
+	
+	function startSearchTimeout ()
+	{
 		clearTimeout(searchTimeout);
+		
 		searchTimeout = setTimeout(searchProjectFiles, SEARCH_TIMEOUT);
 	}
-	////// COMMANDS
-	function commandStartSearching () {
+	
+	//// Commands
+	
+	function commandStartSearching ()
+	{
 		var input = $(BAR_EL).focus();
 
 		input = input[0];
@@ -213,13 +296,18 @@ define(function (require, exports, module) {
 		
 		e.val(val);
 	}
-	////// MENU
-	function registerMenuCommands () {
+	
+	//// Menu
+	
+	function registerMenuCommands ()
+	{
 		CommandManager.register(CMD_NEW_NAME, CMD_NEW_ID, commandStartSearching);
 		CommandManager.register(CMD_CONTINUE_NAME, CMD_CONTINUE_ID, commandContinueSearching);
 		CommandManager.register(CMD_CLEAN_NAME, CMD_CLEAN_ID, cleanSearchInput);
 	}
-	function registerMenuItems () {
+	
+	function registerMenuItems ()
+	{
 		var menu = Menus.getMenu(Menus.AppMenuBar.FIND_MENU);
 
 		menu.addMenuDivider();
