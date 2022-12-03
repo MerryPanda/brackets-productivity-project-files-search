@@ -11,7 +11,7 @@ ESC while focused on search field cleans the field.
 ## Search
 Separate search chunks by space (works as AND), ! before a search chunk works as NOT for a chunk.
 
-/ - is a directory separator.
+/ - is a directory separator.\
 \ - is an escape symbol.
 
 ## Example
