@@ -98,7 +98,13 @@ define(function (require, exports, module)
 	{
 		function isValidStrWithNode (str, node)
 		{
-			if (util.str.contains(str, node.str)) return node.exclude ? false : true;
+			if (node.include) {
+				if (util.str.contains(str, node.str)) return true;
+				else return false;
+			} else {
+				if (util.str.contains(str, node.str)) return false;
+				else return true;
+			}
 		}
 		
 		function formatNode (node)
@@ -106,12 +112,12 @@ define(function (require, exports, module)
 			if (util.str.hasFirstChar(node, KS_EXCLUDE)) {
 				return {
 					str : util.str.escape(util.str.delFirstChar(node)),
-					exclude : true
+					include : false
 				}
 			} else {
 				return {
 					str : util.str.escape(node),
-					exclude : false
+					include : true
 				}
 			}
 		}
@@ -191,7 +197,7 @@ define(function (require, exports, module)
 	function searchProjectFiles ()
 	{
 		var search = $(BAR_EL).val();
-		//alert('search: "'+search+'"');
+
 		fileTreeSelectionHide();
 
 		if (search.length > 0) {
@@ -222,7 +228,7 @@ define(function (require, exports, module)
 	function fileTreeSearch(search)
 	{
 		var nodes = util.searcher.buildNodes(search);
-
+		//console.log(nodes);
 		$(FILETREE_FILE_EL).each(
 			function (i, e)
 			{
