@@ -1,10 +1,17 @@
 .jstree-leaf.search-exclude, .jstree-open.search-exclude {
 	display: none;
 }
+
+#productivity-project-files-search {
+	display: flex;
+	padding: 0 12px;
+	margin-bottom: 9px;
+}
+
 #productivity-project-files-search-bar {
-    background: 0.5rem/0.75rem no-repeat url('search.svg') rgba(0, 0, 0, 0.33);
-    padding-left: 1.75rem;
-    width: calc(100% - 3rem);
-    display: block;
-    color: white;
+	background: 0.5rem/0.75rem no-repeat url('search.svg') rgba(0, 0, 0, 0.33);
+	padding-left: 1.75rem;
+	margin: 0;
+	width: 100%;
+	color: white;
 }

@@ -29,9 +29,12 @@ define(function (require, exports, module)
 	var CMD_CLEAN_KEY = "Alt-x";
 
 	var PROJECT_FILES_HEADER_ID = "project-files-header";
+	var PROJECT_FILES_CONTAINER_ID = "project-files-container";
+	var PROJECT_FILES_SEARCH_ID = "productivity-project-files-search";
 
 	var BAR_ID = "productivity-project-files-search-bar";
 	var BAR_EL = "input#productivity-project-files-search-bar";
+	var BAR_TYPE = "text";
 	var BAR_TXT = "Alt + S/C/X to start/continue/clean";
 	var BAR_FOCUSED_TXT = "Separate by space, ESC to clean, ! - exclude, / - dir sep, \\ - esc";
 	var BAR_TITLE = BAR_TXT + SYMB_NL + BAR_FOCUSED_TXT
@@ -174,16 +177,22 @@ define(function (require, exports, module)
 	
 	function createSearchBar ()
 	{
-		var projectFilesHeader = document.getElementById(PROJECT_FILES_HEADER_ID);
+		var container = document.getElementById(PROJECT_FILES_CONTAINER_ID);
 
-		var searchBar = document.createElement("input");
-		searchBar.type = "text";
-		searchBar.title = BAR_TITLE;
-		searchBar.setAttribute("placeholder", BAR_TXT);
-		searchBar.id = BAR_ID;
-		searchBar.addEventListener("keyup", onSearchBarKeyUp);
+		var parent = container.parentNode;
 
-		projectFilesHeader.appendChild(searchBar);
+		var searcher = document.createElement("div");
+		searcher.id = PROJECT_FILES_SEARCH_ID;
+
+		var bar = document.createElement("input");
+		bar.id = BAR_ID;
+		bar.title = BAR_TITLE;
+		bar.type = BAR_TYPE;
+		bar.setAttribute("placeholder", BAR_TXT);
+
+		searcher.appendChild(bar);
+
+		parent.insertBefore(searcher, container);
 
 		$(BAR_EL)
 			.on("blur", function () {
@@ -191,7 +200,8 @@ define(function (require, exports, module)
 			})
 			.on("focus", function () {
 				$(this).attr("placeholder", BAR_FOCUSED_TXT);
-			});
+			})
+			.on("keyup", onSearchBarKeyUp);
 	}
 	
 	function searchProjectFiles ()
