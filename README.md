@@ -14,7 +14,7 @@ Separate search chunks by space (works as AND), ! before a search chunk works as
 / - is a directory separator.\
 \ - is an escape symbol.
 
-## Example
+## Examples
 "controller main" - controller AND main.\
 "!cache controller main" - NOT cache AND controller AND main.\
 "\\!cache controller main" - !cache AND controller AND main.\
